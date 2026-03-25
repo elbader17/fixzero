@@ -1,4 +1,4 @@
-module github.com/fixzero/fixzero
+module github.com/elbader17/fixzero
 
 go 1.23
 
