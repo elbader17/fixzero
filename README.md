@@ -12,10 +12,11 @@
 ## ⚡ Características
 
 - **Zero-Allocation** - 0 bytes allocations per message in critical path
-- **Ultra-Low Latency** - 115ns parsing, 1.6ns field access
+- **Ultra-Low Latency** - 110ns parsing, 1.6ns field access
 - **Zero-Copy** - Field views using unsafe pointer manipulation
 - **Memory Pools** - sync.Pool for buffer and message reuse
 - **Thread-Safe** - Fully concurrent operation
+- **Full Protocol** - Complete FIX session management, validation, and connectors
 
 ## 🚀 Benchmarks
 
@@ -23,32 +24,20 @@
 
 | Operación | fixzero | QuickFIX/Go | Mejora |
 |-----------|---------|-------------|--------|
-| **Parse** | 115 ns/op | 3,663 ns/op | **32x** |
-| **Builder** | 158 ns/op | 8,677 ns/op | **55x** |
-| **Field Access** | 1.6 ns/op | 380 ns/op | **244x** |
-| **Serialize** | 482 ns/op | 2,741 ns/op | **6x** |
+| **Parse** | 110 ns/op | 4,008 ns/op | **36x** |
+| **Builder** | 156 ns/op | 8,654 ns/op | **55x** |
+| **Field Access** | 1.6 ns/op | 384 ns/op | **244x** |
+| **Serialize** | 639 ns/op | 2,689 ns/op | **4x** |
 
-### Allocations
+### Allocations por Operación
 
 | Operación | fixzero | QuickFIX/Go |
 |-----------|--------|-------------|
 | Parse | **0 B, 0 allocs** | 2,112 B, 20 allocs |
 | Field Access | **0 B, 0 allocs** | 64 B, 5 allocs |
-| Serialize | 112 B, 1 allocs | 376 B, 10 allocs |
-
-### Benchmarks Detallados
-
-```
-goos: linux
-goarch: amd64
-cpu: AMD Ryzen 5 4600H
-
-BenchmarkParse               9,811,245   ns/op    0 B/op    0 allocs/op
-BenchmarkFieldAccess         642,211,480  ns/op    0 B/op    0 allocs/op  
-BenchmarkSerialize           2,446,539    ns/op  112 B/op    1 allocs/op
-BenchmarkBuilder            7,532,527    ns/op    8 B/op    2 allocs/op
-BenchmarkRoundTrip          1,174,479    ns/op  176 B/op    1 allocs/op
-```
+| Serialize | 112 B, 1 alloc | 376 B, 10 allocs |
+| SessionSeqNumIncr | **0 B, 0 allocs** | N/A |
+| ValidateField | **0 B, 0 allocs** | N/A |
 
 ## 📦 Instalación
 
@@ -132,6 +121,360 @@ msg.Iterate(func(tag fixzero.Tag, value string) bool {
 })
 ```
 
+---
+
+## 🏢 Session Management
+
+Control total de sesiones FIX con tracking de secuencias y heartbeats.
+
+```go
+// Crear estado de sesión
+state := fixzero.GetSessionState()
+state.SenderCompID = "SENDER"
+state.TargetCompID = "TARGET"
+state.BeginString = "FIX.4.4"
+state.HeartBtInt = 30
+state.OutMsgSeqNum = 1
+state.InMsgSeqNum = 1
+
+// Incrementar sequence numbers
+state.IncrOutMsgSeqNum()
+state.IncrInMsgSeqNum()
+
+// Verificar heartbeat
+if state.CheckHeartbeat() {
+    fmt.Println("Heartbeat timeout!")
+}
+
+// Actualizar tiempos
+state.UpdateLastSent()
+state.UpdateLastRecv()
+
+// Devolver al pool
+fixzero.PutSessionState(state)
+```
+
+### Manejo de Resend Request
+
+```go
+// Generar mensajes para reenvío
+msgs, err := state.HandleResendRequest(startSeq, endSeq, store)
+for _, msg := range msgs {
+    // Reenviar mensaje
+}
+```
+
+### Manejo de Sequence Reset
+
+```go
+// Ajustar secuencias
+state.HandleSequenceReset(newSeqNum, gapFillFlag)
+```
+
+---
+
+## 🔌 Network Connectors
+
+### Initiator (Cliente)
+
+```go
+// Implementar Application
+type MyApp struct{}
+
+func (a *MyApp) OnCreate(sessionID fixzero.SessionID) {}
+func (a *MyApp) OnLogon(sessionID fixzero.SessionID) {}
+func (a *MyApp) OnLogout(sessionID fixzero.SessionID) {}
+func (a *MyApp) ToAdmin(msg *fixzero.Message, sessionID fixzero.SessionID) {}
+func (a *MyApp) ToApp(msg *fixzero.Message, sessionID fixzero.SessionID) error { return nil }
+func (a *MyApp) FromAdmin(msg *fixzero.Message, sessionID fixzero.SessionID) fixzero.MessageRejectError { return nil }
+func (a *MyApp) FromApp(msg *fixzero.Message, sessionID fixzero.SessionID) fixzero.MessageRejectError { return nil }
+
+// Configurar sesión
+settings := &fixzero.SessionSettings{
+    Host:             "localhost",
+    Port:             "9876",
+    SenderCompID:     "SENDER",
+    TargetCompID:     "TARGET",
+    BeginString:      "FIX.4.4",
+    HeartBtInt:       30,
+    ReconnectInterval: 5,
+}
+
+// Crear initiator
+initiator, err := fixzero.NewInitiator(&MyApp{}, settings)
+if err != nil {
+    panic(err)
+}
+
+// Iniciar conexiones
+err := initiator.Start()
+// ...
+
+// Detener
+initiator.Stop()
+```
+
+### Acceptor (Servidor)
+
+```go
+// Crear acceptor
+acceptor, err := fixzero.NewAcceptor(&MyApp{}, settings)
+if err != nil {
+    panic(err)
+}
+
+// Iniciar servidor
+err := acceptor.Start()
+// ...
+
+// Detener
+acceptor.Stop()
+```
+
+### TLS Support
+
+```go
+settings := &fixzero.SessionSettings{
+    Host: "localhost",
+    Port: "9876",
+    TLS: &tls.Config{
+        MinVersion: tls.VersionTLS12,
+        // ...
+    },
+}
+```
+
+---
+
+## ✅ Message Validation
+
+### Data Dictionary
+
+```go
+// Cargar especificación FIX
+dd, err := fixzero.LoadDataDictionary("FIX44.xml")
+if err != nil {
+    panic(err)
+}
+
+// Validar mensaje
+msg, _ := fixzero.Parse(msgData)
+errors := dd.Validate(msg)
+
+if len(errors) > 0 {
+    for _, err := range errors {
+        fmt.Printf("Error: %s\n", err.Message)
+    }
+}
+```
+
+### Validación de Campos
+
+```go
+// Validar tipo de campo
+err := fixzero.ValidateField(fixzero.TagPrice, "150.50", "DECIMAL")
+// nil = válido
+
+// Validar enumeración
+err := fixzero.ValidateEnum("1", []string{"1", "2", "3", "4", "5"})
+// nil = válido
+```
+
+### Tipos Soportados
+
+```go
+// STRING, CHAR, INT, UINT, FLOAT, BOOLEAN, DATE, TIME, DATETIME, DECIMAL
+err := fixzero.ValidateField(tag, value, "INT")
+```
+
+---
+
+## 📝 Message Types
+
+### NewOrderSingle
+
+```go
+// Decodificar
+msg, _ := fixzero.Parse(data)
+nos := fixzero.NewOrderSingle{}
+nos.Decode(msg)
+
+// Acceder campos
+fmt.Println(nos.ClOrdID)    // Order ID
+fmt.Println(nos.Symbol)     // AAPL
+fmt.Println(nos.Side)       // 1 (Buy)
+fmt.Println(nos.OrdType)    // 2 (Limit)
+fmt.Println(nos.Quantity)   // 100
+
+// Codificar
+msg = nos.Encode()
+data = fixzero.Serialize(msg)
+```
+
+### ExecutionReport
+
+```go
+er := fixzero.ExecutionReport{}
+er.Decode(msg)
+fmt.Println(er.OrderID)
+fmt.Println(er.ExecID)
+fmt.Println(er.OrdStatus)  // 0=New, 1=PartiallyFilled, 2=Filled, etc.
+```
+
+### Mensajes Soportados
+
+| Tipo | Código | Descripción |
+|------|--------|-------------|
+| NewOrderSingle | D | Nueva orden |
+| ExecutionReport | 8 | Reporte de ejecución |
+| OrderCancelRequest | F | Solicitud de cancelación |
+| OrderCancelReplace | G | Modificación de orden |
+| OrderStatusRequest | H | Consulta de estado |
+| OrderCancelReject | 9 | Rechazo de cancelación |
+| Heartbeat | 0 | Heartbeat |
+| TestRequest | 1 | Test request |
+| ResendRequest | 2 | Reenvío de mensajes |
+| Reject | 3 | Rechazo |
+| SequenceReset | 4 | Reset de secuencia |
+| Logout | 5 | Logout |
+| Logon | A | Logon |
+
+---
+
+## 💾 Message Store
+
+### MemoryStore (En memoria)
+
+```go
+store, err := fixzero.NewMemoryStore()
+if err != nil {
+    panic(err)
+}
+
+// Guardar mensaje
+store.SaveMessage(1, msgData)
+
+// Recuperar mensaje
+msg, err := store.GetMessage(1)
+
+// Range de mensajes
+msgs, err := store.GetRange(1, 100)
+
+// Secuencias
+store.SetNextSenderSeqNum(10)
+senderSeq := store.GetNextSenderSeqNum()
+store.IncrNextSenderSeqNum()
+
+// Cerrar
+store.Close()
+```
+
+### FileStore (Archivos)
+
+```go
+store, err := fixzero.NewFileStore("./store")
+if err != nil {
+    panic(err)
+}
+// ... mismo API que MemoryStore
+store.Close()
+```
+
+### SQLiteStore
+
+```go
+store, err := fixzero.NewSQLiteStore("./fixzero.db")
+if err != nil {
+    panic(err)
+}
+// ... mismo API que MemoryStore
+store.Close()
+```
+
+---
+
+## 📋 Logging
+
+### NullLog (Descarta todo)
+
+```go
+log := fixzero.NewNullLog()
+log.OnIncoming("8=FIX.4.4|35=D|")
+log.OnOutgoing("8=FIX.4.4|35=8|")
+log.OnEvent("Connected")
+log.OnError("Error message")
+```
+
+### ScreenLog (Consola)
+
+```go
+log := fixzero.NewScreenLog(true) // true = con colores
+log.OnIncoming("8=FIX.4.4|35=D|")
+// Output: 2026-03-25 19:00:00 [INCOMING] 8=FIX.4.4|35=D|
+```
+
+### FileLog (Archivos)
+
+```go
+log, err := fixzero.NewFileLog("./logs")
+if err != nil {
+    panic(err)
+}
+log.OnIncoming("8=FIX.4.4|35=D|")
+log.OnOutgoing("8=FIX.4.4|35=8|")
+log.OnEvent("Event")
+log.OnError("Error")
+log.Close() // Cerrar archivos
+```
+
+---
+
+## 🔄 Repeating Groups
+
+### Contar grupos
+
+```go
+// Contar grupos NoPartyIDs (tag 453)
+count := fixzero.CountGroups(msg, 453)
+fmt.Printf("Hay %d grupos\n", count)
+```
+
+### Iterar grupos
+
+```go
+// Iterar todos los grupos
+fixzero.IterateGroups(msg, 453, func(idx int, fields []fixzero.Field) bool {
+    fmt.Printf("Grupo %d:\n", idx)
+    for _, f := range fields {
+        fmt.Printf("  %d = %s\n", f.Tag, f.Value)
+    }
+    return true // continuar
+})
+```
+
+### Obtener grupo específico
+
+```go
+// Obtener tercer grupo (índice 2)
+group := fixzero.GetGroup(msg, "453", 2)
+```
+
+### Validar grupos
+
+```go
+// Definir grupo
+groupDef := &fixzero.GroupDef{
+    Tag:      453,
+    NumField: 580, // NoPartyIDs
+    Fields:   []int{448, 447, 452}, // PartyID, PartyIDSource, PartyRole
+}
+
+// Validar
+errors := fixzero.ValidateGroup(msg, groupDef)
+```
+
+---
+
 ## 📚 API Reference
 
 ### Pool functions
@@ -144,6 +487,10 @@ fixzero.PutBuffer(buf)
 // Message pool
 msg := fixzero.GetMessage()
 fixzero.PutMessage(msg)
+
+// Session state pool
+state := fixzero.GetSessionState()
+fixzero.PutSessionState(state)
 ```
 
 ### Parser
@@ -206,6 +553,8 @@ msg.Has(tag)            // bool
 msg.Iterate(func(tag Tag, value string) bool)
 ```
 
+---
+
 ## 🏷️ Constantes
 
 ### Tags estándar
@@ -239,6 +588,7 @@ fixzero.MsgTypeQuoteRequest      // R
 fixzero.MsgTypeMarketDataRequest // V
 fixzero.MsgTypeHeartbeat         // 0
 fixzero.MsgTypeLogout            // 5
+fixzero.MsgTypeLogon             // A
 // ... y más
 ```
 
@@ -263,6 +613,8 @@ fixzero.TIFF_GTC     // "3"
 fixzero.TIFF_GTD     // "4"
 ```
 
+---
+
 ## 🎯 Optimizaciones Aplicadas
 
 1. **Array-based field indexing** - O(1) lookup sin map
@@ -272,28 +624,39 @@ fixzero.TIFF_GTD     // "4"
 5. **Inline hints** - compiler optimization
 6. **Hot path optimization** - Loop sin llamadas externas
 
+---
+
 ## 📁 Estructura del Proyecto
 
 ```
 fixzero/
-├── pool.go          # Buffer pools, Message struct
-├── parser.go        # Zero-allocation parser
-├── serializer.go    # Serializer optimizado
-├── field.go        # Field accessors
-├── msgpool.go       # Message pool + Builder
-├── tags.go          # Tags y constantes FIX
-├── fixzero_test.go  # Tests
-├── bench_test.go   # Benchmarks
-├── COMPARISON.md    # vs QuickFIX comparison
-└── TODO.md          # Funcionalidades faltantes
+├── pool.go             # Buffer pools, Message struct
+├── parser.go           # Zero-allocation parser
+├── serializer.go       # Serializer optimizado
+├── field.go            # Field accessors
+├── msgpool.go          # Message pool + Builder
+├── tags.go             # Tags, message types, enums
+├── session.go          # Session management
+├── connectors.go      # Initiator/Acceptor
+├── validation.go       # Data dictionary, validation
+├── msgtypes.go         # Message type structs
+├── store.go            # MessageStore implementations
+├── logging.go          # Log implementations
+├── groups.go           # Repeating groups
+├── fixzero_test.go     # Tests
+└── compare/bench_test.go # Benchmarks
 ```
+
+---
 
 ## ⚠️ Notas
 
 - El delimitador de campos en FIX es SOH (0x01), no `|`
 - Los mensajes deben mantener referencia al original mientras el Message exista
 - Usa `PutMessage()` para devolver al pool
-- Para producción, implementa tu propia gestión de sesión
+- Todas las operaciones críticas mantienen zero-allocation
+
+---
 
 ## 📜 Licencia
 
@@ -301,4 +664,4 @@ MIT License - libre para uso comercial y personal.
 
 ---
 
-**¿Necesitas más rendimiento?** Ver [TODO.md](TODO.md) para funcionalidades planned.
+**¿Necesitas más rendimiento?** La librería está optimizada para HFT con latencia ultra-baja.
