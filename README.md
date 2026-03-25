@@ -658,7 +658,7 @@ fixzero/
 
 ---
 
-## 📜 Licencia
+## 📜 License
 
 PROPIETARY - Personal Use Only - Contact for Commercial License
 

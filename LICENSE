@@ -1,22 +1,218 @@
-MIT License - Personal Use Only
-==============================
+================================================================================
+                        PROPRIETARY SOFTWARE LICENSE
+================================================================================
 
-Copyright (c) 2024-2026 fixzero
-
-PROPRIETARY AND CONFIDENTIAL
-
-Este software es PROPIETARIO y CONFIDENTIAL. Este software no puede ser:
-- Redistribuido
-- Vendido
-- Licensed
-- Usado para fines comerciales
-- Modificado
-- Descompilado
-- Reverse engineered
-
-SIN AUTORIZACIÓN ESCRITA PREVIA DEL PROPIETARIO.
+                    fixzero - Zero-Allocation FIX Protocol Library
 
 ================================================================================
-NOTE: For commercial licensing, contact the author.
-      This license is for personal evaluation and testing only.
+                            LICENSE AGREEMENT
+================================================================================
+
+This Proprietary Software License Agreement ("Agreement") is entered into as 
+of the date of download, installation, or use of the software ("Effective Date")
+by and between:
+
+LICENSOR:    fixzero ("Licensor" or "Owner")
+LICENSEE:    You ("Licensee" or "User")
+
+================================================================================
+                              DEFINITIONS
+================================================================================
+
+"Software"           means the fixzero library, including all source code, 
+                     object code, binaries, documentation, and any associated 
+                     materials provided by Licensor.
+
+"Derivative Work"    means any software, documentation, or other work that is 
+                     based upon or derived from the Software.
+
+"Commercial Use"     means any use of the Software for direct or indirect 
+                     monetary gain, including but not limited to:
+                     - Integration into commercial products
+                     - Providing services to third parties using the Software
+                     - Sub-licensing or redistributing
+                     - Use in proprietary trading systems
+
+"Evaluation Use"     means non-commercial testing and evaluation of the 
+                     Software for the sole purpose of determining whether 
+                     to purchase a commercial license.
+
+================================================================================
+                            GRANT OF LICENSE
+================================================================================
+
+This license grants the following limited, non-exclusive, non-transferable 
+rights:
+
+1. EVALUATION LICENSE
+   Subject to the terms and conditions of this Agreement, Licensor hereby 
+   grants to Licensee a limited, non-exclusive, non-transferable license to:
+   
+   a) Download, install, and use the Software solely for Evaluation Use;
+   
+   b) Make a reasonable number of copies of the Software for backup and 
+      archival purposes only;
+   
+   c) Use the Software solely on computers owned or controlled by Licensee.
+
+2. SCOPE OF LICENSE
+   This license does NOT grant the right to:
+   
+   a) Use the Software for any Commercial Use;
+   
+   b) Redistribute, publish, assign, sell, or transfer the Software;
+   
+   c) Modify, adapt, translate, reverse engineer, decompile, or disassemble 
+      the Software;
+   
+   d) Create Derivative Works based on the Software;
+   
+   e) Use the Software in any manner that competes with Licensor;
+   
+   f) Remove or alter any proprietary notices, labels, or marks on the 
+      Software;
+   
+   g) Sublicense, rent, or lease the Software to any third party.
+
+================================================================================
+                         RESTRICTIONS AND LIMITATIONS
+================================================================================
+
+1. PROHIBITION ON COMMERCIAL USE
+   The Software is provided for Evaluation Use only. Any Commercial Use 
+   requires a separate commercial license agreement with Licensor. Using 
+   the Software in any commercial, revenue-generating, or professional 
+   context is strictly prohibited under this license.
+
+2. NO TRANSFERABILITY
+   This license and the rights granted herein are non-transferable. You 
+   may not sublicense, assign, or transfer this license to any third party 
+   without prior written consent from Licensor.
+
+3. NO MODIFICATIONS
+   You may not modify, adapt, translate, or create derivative works from 
+   the Software without prior written permission from Licensor.
+
+4. NO REVERSE ENGINEERING
+   You may not reverse engineer, decompile, disassemble, or attempt to 
+   discover the source code or algorithms of the Software.
+
+5. INTELLECTUAL PROPERTY
+   All intellectual property rights, including but not limited to 
+   copyrights, patents, trade secrets, and trademarks in and to the 
+   Software remain exclusively with Licensor.
+
+================================================================================
+                            OWNERSHIP AND RIGHTS
+================================================================================
+
+1. TITLE AND OWNERSHIP
+   The Software is and remains the sole and exclusive property of Licensor. 
+   This Agreement does not transfer any ownership rights to Licensee. 
+   All rights not expressly granted herein are reserved by Licensor.
+
+2. COPYRIGHT NOTICE
+   The Software is protected by copyright laws and international copyright 
+   treaties, as well as other intellectual property laws and treaties.
+
+3. TRADEMARKS
+   "fixzero" is a trademark of Licensor. You may not use this trademark 
+   without prior written permission.
+
+================================================================================
+                         DISCLAIMER OF WARRANTIES
+================================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. LICENSOR DOES NOT 
+WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE OR UNINTERRUPTED.
+
+================================================================================
+                         LIMITATION OF LIABILITY
+================================================================================
+
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF 
+PROFITS, DATA, OR BUSINESS INFORMATION) ARISING OUT OF OR IN CONNECTION 
+WITH THIS AGREEMENT OR THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF 
+LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+================================================================================
+                         INDEMNIFICATION
+================================================================================
+
+Licensee agrees to indemnify, defend, and hold harmless Licensor from and 
+against any and all claims, damages, losses, costs, and expenses (including 
+reasonable attorneys' fees) arising out of or relating to:
+(a) Licensee's breach of this Agreement; or
+(b) Licensee's use of the Software in violation of this Agreement.
+
+================================================================================
+                         TERMINATION
+================================================================================
+
+1. TERMINATION BY LICENSOR
+   Licensor may terminate this Agreement immediately and without notice 
+   if Licensee breaches any term of this Agreement.
+
+2. TERMINATION BY LICENSEE
+   Licensee may terminate this Agreement at any time by:
+   a) Ceasing all use of the Software;
+   b) Destroying all copies of the Software; and
+   c) Providing written notice to Licensor.
+
+3. EFFECTS OF TERMINATION
+   Upon termination:
+   a) All licenses granted hereunder shall immediately terminate;
+   b) Licensee shall immediately cease all use of the Software;
+   c) Licensee shall destroy all copies of the Software;
+   d) Sections 5, 6, 7, 8, 9, 10, and 11 shall survive termination.
+
+================================================================================
+                       COMMERCIAL LICENSING
+================================================================================
+
+For Commercial Use licensing, please contact the Licensor to discuss:
+
+- Enterprise site licenses
+- Per-seat licenses
+- OEM and integration licenses
+- Source code licensing
+- Custom development and support contracts
+
+Contact: [Contact information to be added]
+
+================================================================================
+                         GENERAL PROVISIONS
+================================================================================
+
+1. GOVERNING LAW
+   This Agreement shall be governed by and construed in accordance with 
+   the laws of [Jurisdiction to be specified].
+
+2. ENTIRE AGREEMENT
+   This Agreement constitutes the entire agreement between the parties 
+   concerning the subject matter hereof and supersedes all prior 
+   agreements and understandings.
+
+3. AMENDMENTS
+   This Agreement may not be amended or modified except by a written 
+   instrument signed by both parties.
+
+4. SEVERABILITY
+   If any provision of this Agreement is held to be invalid or 
+   unenforceable, the remaining provisions shall continue in full 
+   force and effect.
+
+5. WAIVER
+   The failure of either party to enforce any right under this Agreement 
+   shall not constitute a waiver of that right.
+
+6. HEADINGS
+   Section headings are for convenience only and shall not affect the 
+   interpretation of this Agreement.
+
+================================================================================
+                    © 2024-2026 fixzero. All rights reserved.
 ================================================================================
