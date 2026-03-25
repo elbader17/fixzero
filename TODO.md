@@ -166,9 +166,9 @@ type Log interface {
 ```
 
 **Implementaciones:**
-- [ ] NullLog
-- [ ] ScreenLog
-- [ ] FileLog
+- [x] NullLog
+- [x] ScreenLog
+- [x] FileLog
 
 ### 7. Repeating Groups
 
