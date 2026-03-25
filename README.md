@@ -42,7 +42,7 @@
 ## 📦 Installation
 
 ```bash
-go get github.com/fixzero/fixzero
+go get github.com/elbader17/fixzero
 ```
 
 ## 🔧 Uso Básico
@@ -54,7 +54,7 @@ package main
 
 import (
     "fmt"
-    fixzero "github.com/fixzero/fixzero"
+    fixzero "github.com/elbader17/fixzero"
 )
 
 func main() {
