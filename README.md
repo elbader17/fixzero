@@ -39,7 +39,7 @@
 | SessionSeqNumIncr | **0 B, 0 allocs** | N/A |
 | ValidateField | **0 B, 0 allocs** | N/A |
 
-## 📦 Instalación
+## 📦 Installation
 
 ```bash
 go get github.com/fixzero/fixzero
@@ -47,7 +47,7 @@ go get github.com/fixzero/fixzero
 
 ## 🔧 Uso Básico
 
-### Parsear un mensaje
+### Parse a Message
 
 ```go
 package main
@@ -58,7 +58,7 @@ import (
 )
 
 func main() {
-    // Mensaje FIX con delimitador SOH
+    // FIX message with SOH delimiter
     msgData := []byte("8=FIX.4.4\x019=0123\x0135=D\x0134=1\x0149=SENDER\x0156=TARGET\x0111=ORDER123\x0155=AAPL\x0154=1\x0140=2\x0138=100\x0144=150.50\x0110=001\x01")
     
     msg, err := fixzero.Parse(msgData)
@@ -66,17 +66,17 @@ func main() {
         panic(err)
     }
     
-    // Acceso a campos (zero-copy)
+    // Field access (zero-copy)
     fmt.Println("Symbol:", msg.GetString(fixzero.TagSymbol))    // AAPL
     fmt.Println("Price:", msg.GetFloat(fixzero.TagPrice))      // 150.50
     fmt.Println("Side:", msg.GetString(fixzero.TagSide))       // 1
     
-    // Devolver al pool
+    // Return to pool
     fixzero.PutMessage(msg)
 }
 ```
 
-### Construir un mensaje
+### Build a Message
 
 ```go
 msg := fixzero.NewBuilder().
@@ -94,7 +94,7 @@ data := fixzero.Serialize(msg)
 fixzero.PutMessage(msg)
 ```
 
-### Acceso a campos
+### Field Access
 
 ```go
 // String
@@ -114,10 +114,10 @@ if msg.Has(fixzero.TagPrice) {
     // ...
 }
 
-// Iterar campos
+// Iterate fields
 msg.Iterate(func(tag fixzero.Tag, value string) bool {
     fmt.Printf("Tag %d = %s\n", tag, value)
-    return true // continuar iteración
+    return true // continue iteration
 })
 ```
 
@@ -125,10 +125,10 @@ msg.Iterate(func(tag fixzero.Tag, value string) bool {
 
 ## 🏢 Session Management
 
-Control total de sesiones FIX con tracking de secuencias y heartbeats.
+FIX session management with sequence tracking and heartbeat control.
 
 ```go
-// Crear estado de sesión
+// Create session state
 state := fixzero.GetSessionState()
 state.SenderCompID = "SENDER"
 state.TargetCompID = "TARGET"
@@ -150,17 +150,17 @@ if state.CheckHeartbeat() {
 state.UpdateLastSent()
 state.UpdateLastRecv()
 
-// Devolver al pool
+// Return to pool
 fixzero.PutSessionState(state)
 ```
 
 ### Manejo de Resend Request
 
 ```go
-// Generar mensajes para reenvío
+// Generate messages for resend
 msgs, err := state.HandleResendRequest(startSeq, endSeq, store)
 for _, msg := range msgs {
-    // Reenviar mensaje
+    // Resend message
 }
 ```
 
@@ -189,7 +189,7 @@ func (a *MyApp) ToApp(msg *fixzero.Message, sessionID fixzero.SessionID) error {
 func (a *MyApp) FromAdmin(msg *fixzero.Message, sessionID fixzero.SessionID) fixzero.MessageRejectError { return nil }
 func (a *MyApp) FromApp(msg *fixzero.Message, sessionID fixzero.SessionID) fixzero.MessageRejectError { return nil }
 
-// Configurar sesión
+// Configure session
 settings := &fixzero.SessionSettings{
     Host:             "localhost",
     Port:             "9876",
@@ -200,13 +200,13 @@ settings := &fixzero.SessionSettings{
     ReconnectInterval: 5,
 }
 
-// Crear initiator
+// Create initiator
 initiator, err := fixzero.NewInitiator(&MyApp{}, settings)
 if err != nil {
     panic(err)
 }
 
-// Iniciar conexiones
+// Start connections
 err := initiator.Start()
 // ...
 
@@ -217,7 +217,7 @@ initiator.Stop()
 ### Acceptor (Servidor)
 
 ```go
-// Crear acceptor
+// Create acceptor
 acceptor, err := fixzero.NewAcceptor(&MyApp{}, settings)
 if err != nil {
     panic(err)
@@ -257,7 +257,7 @@ if err != nil {
     panic(err)
 }
 
-// Validar mensaje
+// Validate message
 msg, _ := fixzero.Parse(msgData)
 errors := dd.Validate(msg)
 
@@ -271,11 +271,11 @@ if len(errors) > 0 {
 ### Validación de Campos
 
 ```go
-// Validar tipo de campo
+// Validate field type
 err := fixzero.ValidateField(fixzero.TagPrice, "150.50", "DECIMAL")
 // nil = válido
 
-// Validar enumeración
+// Validate enumeration
 err := fixzero.ValidateEnum("1", []string{"1", "2", "3", "4", "5"})
 // nil = válido
 ```
@@ -294,19 +294,19 @@ err := fixzero.ValidateField(tag, value, "INT")
 ### NewOrderSingle
 
 ```go
-// Decodificar
+// Decode
 msg, _ := fixzero.Parse(data)
 nos := fixzero.NewOrderSingle{}
 nos.Decode(msg)
 
-// Acceder campos
+// Access fields
 fmt.Println(nos.ClOrdID)    // Order ID
 fmt.Println(nos.Symbol)     // AAPL
 fmt.Println(nos.Side)       // 1 (Buy)
 fmt.Println(nos.OrdType)    // 2 (Limit)
 fmt.Println(nos.Quantity)   // 100
 
-// Codificar
+// Encode
 msg = nos.Encode()
 data = fixzero.Serialize(msg)
 ```
@@ -333,7 +333,7 @@ fmt.Println(er.OrdStatus)  // 0=New, 1=PartiallyFilled, 2=Filled, etc.
 | OrderCancelReject | 9 | Rechazo de cancelación |
 | Heartbeat | 0 | Heartbeat |
 | TestRequest | 1 | Test request |
-| ResendRequest | 2 | Reenvío de mensajes |
+| ResendRequest | 2 | Resend messages |
 | Reject | 3 | Rechazo |
 | SequenceReset | 4 | Reset de secuencia |
 | Logout | 5 | Logout |
@@ -351,13 +351,13 @@ if err != nil {
     panic(err)
 }
 
-// Guardar mensaje
+// Save message
 store.SaveMessage(1, msgData)
 
-// Recuperar mensaje
+// Retrieve message
 msg, err := store.GetMessage(1)
 
-// Range de mensajes
+// Message range
 msgs, err := store.GetRange(1, 100)
 
 // Secuencias
@@ -365,7 +365,7 @@ store.SetNextSenderSeqNum(10)
 senderSeq := store.GetNextSenderSeqNum()
 store.IncrNextSenderSeqNum()
 
-// Cerrar
+// Close
 store.Close()
 ```
 
@@ -408,7 +408,7 @@ log.OnError("Error message")
 ### ScreenLog (Consola)
 
 ```go
-log := fixzero.NewScreenLog(true) // true = con colores
+log := fixzero.NewScreenLog(true) // true = with colors
 log.OnIncoming("8=FIX.4.4|35=D|")
 // Output: 2026-03-25 19:00:00 [INCOMING] 8=FIX.4.4|35=D|
 ```
@@ -424,25 +424,25 @@ log.OnIncoming("8=FIX.4.4|35=D|")
 log.OnOutgoing("8=FIX.4.4|35=8|")
 log.OnEvent("Event")
 log.OnError("Error")
-log.Close() // Cerrar archivos
+log.Close() // Close files
 ```
 
 ---
 
 ## 🔄 Repeating Groups
 
-### Contar grupos
+### Count Groups
 
 ```go
-// Contar grupos NoPartyIDs (tag 453)
+// Count NoPartyIDs groups (tag 453)
 count := fixzero.CountGroups(msg, 453)
-fmt.Printf("Hay %d grupos\n", count)
+fmt.Printf("There are %d groups\n", count)
 ```
 
-### Iterar grupos
+### Iterate Groups
 
 ```go
-// Iterar todos los grupos
+// Iterate all groups
 fixzero.IterateGroups(msg, 453, func(idx int, fields []fixzero.Field) bool {
     fmt.Printf("Grupo %d:\n", idx)
     for _, f := range fields {
@@ -452,24 +452,24 @@ fixzero.IterateGroups(msg, 453, func(idx int, fields []fixzero.Field) bool {
 })
 ```
 
-### Obtener grupo específico
+### Get Specific Group
 
 ```go
-// Obtener tercer grupo (índice 2)
+// Get third group (index 2)
 group := fixzero.GetGroup(msg, "453", 2)
 ```
 
-### Validar grupos
+### Validate Groups
 
 ```go
-// Definir grupo
+// Define group
 groupDef := &fixzero.GroupDef{
     Tag:      453,
     NumField: 580, // NoPartyIDs
     Fields:   []int{448, 447, 452}, // PartyID, PartyIDSource, PartyRole
 }
 
-// Validar
+// Validate
 errors := fixzero.ValidateGroup(msg, groupDef)
 ```
 
@@ -496,10 +496,10 @@ fixzero.PutSessionState(state)
 ### Parser
 
 ```go
-// Parse mensaje
+// Parse message
 msg, err := fixzero.Parse(data)
 
-// Parse en mensaje existente (reuse)
+// Parse into existing message (reuse)
 err := fixzero.ParseInto(data, msg)
 
 // Parser personalizado
@@ -520,7 +520,7 @@ data := fixzero.SerializeTo(msg, existingBuf)
 ### Builder
 
 ```go
-// Crear builder
+// Create builder
 b := fixzero.NewBuilder()
 
 // Métodos chaining
@@ -555,7 +555,7 @@ msg.Iterate(func(tag Tag, value string) bool)
 
 ---
 
-## 🏷️ Constantes
+## 🏷️ Constants
 
 ### Tags estándar
 
@@ -574,7 +574,7 @@ fixzero.TagOrdType      // 40
 fixzero.TagQuantity     // 38
 fixzero.TagPrice        // 44
 fixzero.TagCheckSum     // 10
-// ... y más en tags.go
+// ... and more in tags.go
 ```
 
 ### Message Types
@@ -615,7 +615,7 @@ fixzero.TIFF_GTD     // "4"
 
 ---
 
-## 🎯 Optimizaciones Aplicadas
+## 🎯 Applied Optimizations
 
 1. **Array-based field indexing** - O(1) lookup sin map
 2. **Unsafe pointer manipulation** - Zero-copy string views  
@@ -626,7 +626,7 @@ fixzero.TIFF_GTD     // "4"
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 fixzero/
@@ -649,10 +649,10 @@ fixzero/
 
 ---
 
-## ⚠️ Notas
+## ⚠️ Notes
 
 - El delimitador de campos en FIX es SOH (0x01), no `|`
-- Los mensajes deben mantener referencia al original mientras el Message exista
+- Messages must keep reference to original while Message exists
 - Usa `PutMessage()` para devolver al pool
 - Todas las operaciones críticas mantienen zero-allocation
 
