@@ -660,7 +660,7 @@ fixzero/
 
 ## 📜 Licencia
 
-MIT License - libre para uso comercial y personal.
+PROPIETARY - Personal Use Only - Contact for Commercial License
 
 ---
 
