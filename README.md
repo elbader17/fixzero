@@ -4,8 +4,8 @@
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                        fixzero - ZERO-ALLOCATION                        ║
-║              The fastest FIX protocol library in Go                      ║
+║                        fixzero - ZERO-ALLOCATION                          ║
+║                   The fastest FIX protocol library in Go                  ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
